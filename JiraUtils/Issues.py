@@ -3,7 +3,7 @@ from rich import print
 import aiohttp
 
 from JiraUtils import base_url, requests_session, headers
-from JiraUtils.models import Issue
+from JiraUtils.models import Issue, Fields, NameField, IdField, CreateIssueResponse, CreateIssueErrorResponse
 
 def get_issue(issue_key: str) -> Issue | None:
     '''Get an issue synchronously
@@ -50,7 +50,6 @@ def get_issue(issue_key: str) -> Issue | None:
         print(f'[red]Get Issue Error: {response.status_code}, Reason: {response.reason}[/red]')
         return None
 
-# Get an issue asynchronously
 async def get_issue_async(issue_key: str) -> Issue | None:
     '''Get an issue asynchronously
 
@@ -101,3 +100,69 @@ async def get_issue_async(issue_key: str) -> Issue | None:
                 # Return None if the request was unsuccessful
                 print(f'[red]Get Issue Error: {response.status}, Reason: {response.reason}[/red]')
                 return None
+
+def create_issue(issue_type: str, summary: str, description: str) -> str | None:
+    '''Create an issue in Jira
+
+    Parameters:
+    - `issue_type`: The issue type to create
+    - `summary`: The summary of the issue
+    - `description`: The description of the issue
+
+    Returns:
+    - `str | None`: The issue key if the request was successful, otherwise None
+
+    Raises:
+    - `ValidationError`: If the issue is invalid
+
+    Example:
+    ```python
+    from JiraUtils import create_issue
+
+    issue_key = create_issue(
+        issue_type='Bug',
+        summary='Test Issue',
+        description='This is a test issue 😍🐶',
+    )
+    ```
+    '''
+    # Create the pydantic fields
+    fields = Fields(
+        project=IdField(id = '10000'),
+        issuetype=NameField(name = issue_type),
+        summary=summary,
+        description=description,
+    )
+
+    # Create the pydantic issue
+    issue = Issue(fields=fields)
+
+    # Create the issue in Jira
+    response = requests_session.post(
+        f'{base_url}/rest/api/2/issue/',
+        json=issue.model_dump(by_alias=True),
+    )
+
+    # Check if the request was successful
+    if response.status_code == 201:
+        # Create a response model
+        response_model = CreateIssueResponse(**response.json())
+
+        # Return the issue key
+        return response_model.key
+    else:
+        # Print an error message and return None
+        print(f'[red]Create Issue Error: {response.status_code}, Reason: {response.reason}[/red]')
+
+        # Create an error response model
+        response_model = CreateIssueErrorResponse(**response.json())
+
+        # Print the error messages
+        for error_message in response_model.errorMessages:
+            print(f'[red]{error_message}[/red]')
+
+        # Print the errors
+        for key, value in response_model.errors.items():
+            print(f'[red]{key}: {value}[/red]')
+
+        return None

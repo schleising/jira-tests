@@ -7,6 +7,18 @@ class Session(BaseModel):
 class SessionResponse(BaseModel):
     session: Session
 
+class CreateIssueResponse(BaseModel):
+    id: str
+    key: str
+    self: str
+
+class CreateIssueErrorResponse(BaseModel):
+    errorMessages: list[str]
+    errors: dict[str, str]
+
+class IdField(BaseModel):
+    id: str
+
 class NameField(BaseModel):
     name: str
 
@@ -14,13 +26,13 @@ class ValueField(BaseModel):
     value: str
 
 class Fields(BaseModel):
-    project: NameField
+    project: IdField
     issue_type: NameField = Field(..., alias='issuetype')
     summary: str
     description: str
 
 class Issue(BaseModel):
-    key: str
+    key: str | None = None
     fields: Fields
 
     def __str__(self):
