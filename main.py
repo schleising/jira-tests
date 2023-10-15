@@ -37,9 +37,10 @@ def main():
 
     if issue is not None:
         print(f'Key: {issue.key}')
-        print(f'Issue Type: {issue.issue_type.name}')
+        print(f'Issue Type: {issue.issue_type}')
         print(f'Summary: {issue.summary}')
-        print(f'Description: {issue.description}')        
+        print(f'Description: {issue.description}')     
+        print(f'Status: {issue.status}')   
 
     # Print the issue
     print(issue)
@@ -52,4 +53,4 @@ if __name__ == '__main__':
     asyncio.run(get_issues())
 
     # Create some issues
-    create_issues()
+    # create_issues()

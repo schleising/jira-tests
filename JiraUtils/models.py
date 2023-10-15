@@ -1,3 +1,5 @@
+from enum import Enum
+
 from pydantic import BaseModel, Field
 
 class Session(BaseModel):
@@ -25,11 +27,24 @@ class NameField(BaseModel):
 class ValueField(BaseModel):
     value: str
 
+class StatusType(str, Enum):
+    backlog = 'Backlog'
+    selected_for_development = 'Selected for Development'
+    in_progress = 'In Progress'
+    done = 'Done'
+
+    def __str__(self) -> str:
+        return self.value
+
+class StatusField(BaseModel):
+    name: StatusType
+
 class Fields(BaseModel):
     project: IdField
     issue_type: NameField = Field(..., alias='issuetype')
     summary: str
     description: str
+    status: StatusField | None = None
 
 class Issue(BaseModel):
     key: str | None = None
@@ -39,21 +54,25 @@ class Issue(BaseModel):
         return f'{self.key}: {self.fields.summary}'
 
     @property
-    def issue_key(self):
+    def issue_key(self) -> str | None:
         return self.key
 
     @property
-    def project(self):
-        return self.fields.project
+    def project(self) -> str:
+        return self.fields.project.id
     
     @property
-    def issue_type(self):
-        return self.fields.issue_type
+    def issue_type(self) -> str:
+        return self.fields.issue_type.name
 
     @property
-    def summary(self):
+    def summary(self) -> str:
         return self.fields.summary
     
     @property
-    def description(self):
+    def description(self) -> str:
         return self.fields.description
+    
+    @property
+    def status(self) -> str | None:
+        return self.fields.status.name if self.fields.status is not None else None
