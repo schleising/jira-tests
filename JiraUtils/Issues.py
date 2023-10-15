@@ -93,7 +93,7 @@ async def get_issue_async(issue_key: str) -> Issue | None:
                     issue = Issue(**await response.json())
                     return issue
                 except ValidationError as e:
-                    print(f'[red]Issue Validation Error: {e}[/red]')
+                    print(f'[red]Issue Validation Error for {issue_key}: {e}[/red]')
                     print(f'{await response.json()}')
                     return None
             else:

@@ -51,7 +51,7 @@ class Issue(BaseModel):
     fields: Fields
 
     def __str__(self):
-        return f'{self.key}: {self.fields.summary}'
+        return f'{self.key} - {self.fields.summary} - {self.fields.status.name if self.fields.status is not None else None}'
 
     @property
     def issue_key(self) -> str | None:

@@ -6,7 +6,7 @@ async def get_issues():
     # Create a task group
     async with asyncio.TaskGroup() as task_group:
         # Create a task for each issue
-        tasks = [task_group.create_task(get_issue_async('MT-1')) for _ in range(10)]
+        tasks = [task_group.create_task(get_issue_async(f'MT-{i}')) for i in range(4, 8)]
 
         # Add a callback to each task to print the result
         for task in tasks:
