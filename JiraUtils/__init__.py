@@ -51,8 +51,20 @@ def _initialise_sessions() -> tuple[requests.Session, dict[str, str]]:
         session = SessionResponse(**response.json()).session
         HEADERS['cookie'] = f'{session.name}={session.value}'
 
+        # Get the user details
+        response = requests.get(f'{base_url}/rest/api/2/myself', headers=HEADERS)
+
+        # Check the response
+        if response.status_code == 200:
+            # Get the user details
+            userdetails = response.json()
+        else:
+            # Print an error message and exit
+            print(f'[red]User Details Error {response.status_code}, Reason: {response.reason}[/red]')
+            exit()
+
         # Print a success message
-        print('[green]Logged in[/green]')
+        print(f'[green]Logged in as {userdetails["name"]}[/green]')
     else:
         # Print an error message and exit
         print(f'[red]Login Error {response.status_code}, Reason: {response.reason}[/red]')
@@ -85,11 +97,11 @@ def _initialise_sessions() -> tuple[requests.Session, dict[str, str]]:
     # Return the requests session and headers
     return requests_session, HEADERS
 
-# Initialise the requests session and headers
-requests_session, headers = _initialise_sessions()
-
 # Set the base url
 base_url = 'http://macmini2:8100'
+
+# Initialise the requests session and headers
+requests_session, headers = _initialise_sessions()
 
 from JiraUtils.Issues import get_issue, get_issue_async, create_issue
 
