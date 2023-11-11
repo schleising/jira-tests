@@ -3,7 +3,7 @@ from rich import print
 import aiohttp
 
 from JiraUtils import base_url, requests_session, headers
-from JiraUtils.models import Issue, Fields, NameField, IdField, CreateIssueResponse, CreateIssueErrorResponse
+from JiraUtils.models import Issue, Fields, NameField, IdField, CreateIssueResponse, CreateIssueErrorResponse, IssueLinks, KeyField
 
 def get_issue(issue_key: str) -> Issue | None:
     '''Get an issue synchronously
@@ -101,7 +101,7 @@ async def get_issue_async(issue_key: str) -> Issue | None:
                 print(f'[red]Get Issue Error: {response.status}, Reason: {response.reason}[/red]')
                 return None
 
-def create_issue(issue_type: str, summary: str, description: str) -> str | None:
+def create_issue(issue_type: str, summary: str, description: str, epic_name: str | None = None) -> str | None:
     '''Create an issue in Jira
 
     Parameters:
@@ -132,6 +132,7 @@ def create_issue(issue_type: str, summary: str, description: str) -> str | None:
         issuetype=NameField(name = issue_type),
         summary=summary,
         description=description,
+        epic_name=epic_name,
     )
 
     # Create the pydantic issue
@@ -140,7 +141,7 @@ def create_issue(issue_type: str, summary: str, description: str) -> str | None:
     # Create the issue in Jira
     response = requests_session.post(
         f'{base_url}/rest/api/2/issue/',
-        json=issue.model_dump(by_alias=True),
+        json=issue.model_dump(by_alias=True, exclude_none=True),
     )
 
     # Check if the request was successful
@@ -166,3 +167,26 @@ def create_issue(issue_type: str, summary: str, description: str) -> str | None:
             print(f'[red]{key}: {value}[/red]')
 
         return None
+
+def create_issue_link(inward_issue_key: str, outward_issue_key: str) -> bool:
+    # Create the IssueLinks model
+    issue_links = IssueLinks(
+        inwardIssue=KeyField(key=inward_issue_key),
+        outwardIssue=KeyField(key=outward_issue_key),
+    )
+
+    # Create the link
+    response = requests_session.post(
+        f'{base_url}/rest/api/2/issueLink',
+        json=issue_links.model_dump(by_alias=True),
+    )
+
+    # Check if the request was successful
+    if response.status_code == 201:
+        # Print a success message
+        print(f'[green]Linked {inward_issue_key} to {outward_issue_key}[/green]')
+        return True
+    else:
+        # Print an error message
+        print(f'[red]Create Issue Link Error: {response.status_code}, Reason: {response.reason}[/red]')
+        return False

@@ -103,7 +103,7 @@ base_url = 'http://macmini2:8100'
 # Initialise the requests session and headers
 requests_session, headers = _initialise_sessions()
 
-from JiraUtils.Issues import get_issue, get_issue_async, create_issue
+from JiraUtils.Issues import get_issue, get_issue_async, create_issue, create_issue_link
 
 # Export the public functions and variables
 __all__ = [
@@ -113,4 +113,5 @@ __all__ = [
     'get_issue',
     'get_issue_async',
     'create_issue',
+    'create_issue_link',
 ]

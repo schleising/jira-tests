@@ -2,6 +2,14 @@ from enum import Enum
 
 from pydantic import BaseModel, Field
 
+class IssueType(str, Enum):
+    bug = 'Bug'
+    epic = 'Epic'
+    story = 'Story'
+
+    def __str__(self) -> str:
+        return self.value
+
 class Session(BaseModel):
     name: str
     value: str
@@ -27,6 +35,9 @@ class NameField(BaseModel):
 class ValueField(BaseModel):
     value: str
 
+class KeyField(BaseModel):
+    key: str
+
 class StatusType(str, Enum):
     backlog = 'Backlog'
     selected_for_development = 'Selected for Development'
@@ -45,6 +56,12 @@ class Fields(BaseModel):
     summary: str
     description: str
     status: StatusField | None = None
+    epic_name: str | None = Field(default=None, serialization_alias='customfield_10103')
+
+class IssueLinks(BaseModel):
+    inwardIssue: KeyField
+    outwardIssue: KeyField
+    type: NameField = NameField(name='Relates')
 
 class Issue(BaseModel):
     key: str | None = None
